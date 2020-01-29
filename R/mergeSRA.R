@@ -13,7 +13,9 @@
 
 mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1", filenum2 = "2", print_log = F){
 
-  ##setup and tests
+
+  # setup and tests ---------------------------------------------------------
+
    error_message <- "Either gff1 and gff2 or ncRNAgff are needed:\n"
   stop_val <- 0
   log_file = ""
@@ -23,6 +25,8 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
   }else{
     gff1 <- gff1%>%mutate(filenum = filenum1)
   }
+
+
 
 if(missing(gff2)){
   error_message <- paste(error_message, "\tArugment gff2 missing\n", sep = "")
@@ -49,8 +53,11 @@ if(missing(ncRNAgff)){
   ptm <- proc.time()
 
 
-##sort through the features and merge overlapping features
-ncRNAgff <- ncRNAgff%>%arrange(start)
+
+# Data frame setuo ----------------
+
+
+  ncRNAgff <- ncRNAgff%>%arrange(start)
 
 
 mergedDat <- data.frame(sequence = as.character("0"), feature = as.character("0"),
@@ -70,6 +77,11 @@ mergedDat <- data.frame(sequence = as.character("0"), feature = as.character("0"
 i <- 892
 current_feature <- F #is there a current feature being written?
 new_feature <- F
+
+
+# Main loop ---------------------------------------------------------------
+
+
 for(i in 1:(nrow(ncRNAgff) - 1)){
 
   if(quiet ==F){
