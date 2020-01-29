@@ -1,0 +1,5 @@
+plot_threshold	10
+plot_threshold_feature	0
+feature_separation_distance	15
+feature_length	50
+r_squared	0.5
