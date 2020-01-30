@@ -11,10 +11,8 @@
 #' mergeSRA()
 
 
-mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1", filenum2 = "2", initial_data = T, print_log = F){
-
-
-  # setup and tests ---------------------------------------------------------
+mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1", filenum2 = "2", initial_data = T, align = T){
+  # Setup and tests ---------------------------------------------------------
 
   error_message <- "Either gff1 and gff2 or ncRNAgff are needed:\n"
   stop_val <- 0
@@ -54,10 +52,10 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
 
 
 
-  # Data frame setuo ----------------
+  # Data frame setup ----------------
 
 
-  ncRNAgff <- ncRNAgff%>%arrange(start)
+  ncRNAgff <- ncRNAgff%>%arrange(start) %>% arrange(strand)
 
   ##Data will be written into this format
   mergedDat <- data.frame(sequence = as.character("0"), feature = as.character("0"),
@@ -68,13 +66,15 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
                           score = as.character("0"),
                           new_feature = F,
                           number_of_rnaseq_files = as.integer("0"),
-                           id = as.character("0"),
-                           set_val = as.character("0"),
+                          id1 = as.character("0"),
+                          id2 = as.character("0"),
+                          set_val_1 = as.character("0"),
+                          set_val_2 = as.character("0"),
                           file_id = as.character("0"),
                           stringsAsFactors = F)
 
   ##loop through the combined gff files and combine features that overlap
-  #i <- 892
+  #i <- 278
   current_feature <- F #is there a current feature being written?
   new_feature <- F
 
@@ -128,8 +128,8 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
       }
 
       ##take the current set value and if one does not exist then set to 1
-      set_val1 <- ifelse(filenum1 == ncRNAgff$file_id[i], ncRNAgff$set_val[i], 0)
-      set_val2 <- ifelse(filenum2 == ncRNAgff$file_id[i], ncRNAgff$set_val[i], 0)
+      set_val_1 <- ifelse(filenum1 == ncRNAgff$file_id[i], ncRNAgff$set_val[i], 0)
+      set_val_2 <- ifelse(filenum2 == ncRNAgff$file_id[i], ncRNAgff$set_val[i], 0)
 
       ##Number of features
       ##Combine each set of ids and get a unique list of each id available
@@ -151,23 +151,38 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
       }
       number_of_features <- sum(as.numeric(idList))
 
-      ##build the new data frame to write to
+      ##get the set values from old features
+      if(initial_data == F){
+        idSetValues <- ncRNAgff[start_i:i,c(17:(ncol(ncRNAgff)))]
+        for(j in 1:ncol(idSetValues)){
+          idSetValues[1,j] <- interset_all(idSetValues[idSetValues[,j]!= "0",j])
+
+        }
+        idSetValues <- idSetValues[1,]
+      }
+
       tmp <- data.frame(sequence = ncRNAgff$sequence[i],
                         feature = ncRNAgff$feature[i],
                         start = start_val, end = end_val,
                         strand = ncRNAgff$strand[i],
                         file_names = paste(unique(ncRNAgff$file_id[start_i:i]), collapse = ","),
-                        row_numbers = paste(c(start_i:i), collapse = ","), ##this refers only to the current input ncRNAGff dataframe
+                        row_numbers = as.character(paste(c(start_i:i), collapse = ",")),
                         prop_overlap = prop_val,
                         feature_match = feature_matched,
-                        score = as.character(ncRNAgff$score[i]),
                         number_of_features = number_of_features,
+                        score = as.character(ncRNAgff$score[i]),
                         new_feature = !(F %in% ncRNAgff$new_feature[start_i:i]),
-                        number_of_rnaseq_files = sum(as.integer(ncRNAgff$number_of_features[start_i:i])),
-                        id = paste(id1_val, "-", id2_val, sep = ""),
-                        set_val = paste(unique(c(set_val1, set_val2)), collapse = "-"),
+                        number_of_rnaseq_files = sum(as.integer(ncRNAgff$number_of_rnaseq_files[start_i:i])),
+                        id1 = id1_val,
+                        id2 = id2_val,
+                        set_val_1 = as.character(set_val_1),
+                        set_val_2 = as.character(set_val_2),
                         file_id = paste(filenum1, "-", filenum2, sep = ""),
                         stringsAsFactors = F)
+
+      if(initial_data == F){
+        tmp <- tmp %>% bind_cols(idSetValues)
+      }
       mergedDat <- mergedDat%>%bind_rows(tmp)
 
   ##this is the end of the loop writing a feature that cannot be mapped
@@ -233,8 +248,20 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
       }
 
       ##take the current set value and if one does not exist then set to 1
-      set_val1 <- ifelse(filenum1 == ncRNAgff$file_id[i], ncRNAgff$set_val[i], 0)
-      set_val2 <- ifelse(filenum2 == ncRNAgff$file_id[i], ncRNAgff$set_val[i], 0)
+      set_val_1 <- idRows$set_val[idRows$file_id == filenum1]
+      set_val_2 <- idRows$set_val[idRows$file_id == filenum2]
+
+      set_val_1 <- interset_all(set_val_1)
+      set_val_2 <- interset_all(set_val_2)
+
+
+      if(set_val_1 == ""){
+        set_val_1 <- "0"
+      }
+      if(set_val_2 == ""){
+        set_val_2 <- "0"
+      }
+
 
       ##Number of features
       ##Combine each set of ids and get a unique list of each id available
@@ -256,31 +283,47 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
       }
       number_of_features <- sum(as.numeric(idList))
 
+      ##get the set values from old features
+      if(initial_data == F){
+        idSetValues <- ncRNAgff[start_i:i,c(17:(ncol(ncRNAgff)))]
+        for(j in 1:ncol(idSetValues)){
+          idSetValues[1,j] <- interset_all(idSetValues[idSetValues[,j]!= "0",j])
 
-        tmp <- data.frame(sequence = ncRNAgff[i,1],
-                        feature = ncRNAgff[i,2],
+        }
+        idSetValues <- idSetValues[1,]
+      }
+
+        tmp <- data.frame(sequence = ncRNAgff$sequence[i],
+                        feature = ncRNAgff$feature[i],
                         start = start_val, end = end_val,
-                        strand = ncRNAgff[i,5],
-                        file_names = paste(unique(ncRNAgff[start_i:i, 14]), collapse = ","),
-                        row_numbers = paste(c(start_i:i), collapse = ","),
+                        strand = ncRNAgff$strand[i],
+                        file_names = paste(unique(ncRNAgff$file_id[start_i:i]), collapse = ","),
+                        row_numbers = as.character(paste(c(start_i:i), collapse = ",")),
                         prop_overlap = prop_val,
                         feature_match = feature_matched,
-                        number_of_features = length(start_i:i),
-                        score = as.character(ncRNAgff[i,11]),
-                        new_feature = !(F %in% ncRNAgff[start_i:i, 9]),
-                        number_of_rnaseq_files = sum(as.integer(ncRNAgff[start_i:i, 10])),
-                        id = paste(id1_val, "-", id2_val, sep = ""),
-                        set_val = paste(ifelse(id1_val == paste(filenum1, "_0", sep = ""), 0, 1), "-", ifelse(id2_val == paste(filenum2, "_0", sep = ""), 0, 1), sep = ""),
+                        number_of_features = number_of_features,
+                        score = as.character(ncRNAgff$score[i]),
+                        new_feature = !(F %in% ncRNAgff$new_feature[start_i:i]),
+                        number_of_rnaseq_files = sum(as.integer(ncRNAgff$number_of_rnaseq_files[start_i:i])),
+                        id1 = id1_val,
+                        id2 = id2_val,
+                        set_val_1 = as.character(set_val_1),
+                        set_val_2 = as.character(set_val_2),
                         file_id = paste(filenum1, "-", filenum2, sep = ""),
                         stringsAsFactors = F)
-      mergedDat <- mergedDat%>%bind_rows(tmp)
-      #}else{
-        #log_file <- paste(log_file, start_i, "to", i, "contains too many peaks. There should be one or two. \nThis is limited by the need for an ID for each peak.\n")
-      #}
+        if(initial_data == F){
+          tmp <- tmp %>% bind_cols(idSetValues)
+        }
+        mergedDat <- mergedDat%>%bind_rows(tmp)
+
+      ##feature has been added so start again
       current_feature <- F
       new_feature <- F
     }
   }
+
+  # Tidy up and finish ------------------------------------------------------
+
 
   runningTime <- proc.time() - ptm
   if(time.it){
@@ -289,9 +332,7 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
     }
   }
 
-  if(print_log){
-    cat(log_file)
-  }
+
 
   mergedDat <- mergedDat%>%filter(number_of_features > 0, file_names != "start_row")
   return(mergedDat)

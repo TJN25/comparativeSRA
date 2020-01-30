@@ -22,10 +22,8 @@ alignAndCombine <- function(reference, gff1, gff2, time.it = T, quiet = F, filen
   esch1 <- read.table(gff1, sep = "\t", header = T, as.is = T)
   serr1 <- read.table(gff2, sep = "\t", header = T, as.is = T)
 
-  esch1 <- esch1%>%mutate(changed = F)%>%
-    mutate(id = paste(filenum1, row_number(), sep = "_"))
-  serr1 <- serr1%>%mutate(changed = F)%>%
-    mutate(id = paste(filenum2, row_number(), sep = "_"))
+  esch1 <- esch1%>%mutate(changed = F)
+  serr1 <- serr1%>%mutate(changed = F)
 
 
 
