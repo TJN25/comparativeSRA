@@ -32,12 +32,12 @@ alignAndCombine <- function(reference, gff1, gff2, time.it = T, quiet = F, filen
   serr1b <- reorderGFF(ref = referenceEsch1Serr1Built, gff = serr1, time.it = time.it, quiet = quiet)
   esch1b <- reorderGFF(ref = referenceEsch1Serr1Built, gff = esch1, reference.genome = T, time.it = time.it, quiet = quiet)
 
-  serr1b <- serr1b%>%mutate(filenum = filenum2)
-  esch1b <- esch1b%>%mutate(filenum = filenum1)
+  serr1b <- serr1b%>%mutate(file_id = filenum2)
+  esch1b <- esch1b%>%mutate(file_id = filenum1)
   ncRNAgff <- esch1b%>%bind_rows(serr1b)
 
-  serr1 <- serr1%>%mutate(filenum = filenum2)
-  esch1 <- esch1%>%mutate(filenum = filenum1)
+  serr1 <- serr1%>%mutate(file_id = filenum2)
+  esch1 <- esch1%>%mutate(file_id = filenum1)
   ncRNAgffUnchanged <- esch1%>%bind_rows(serr1)
   tmp1 <- ncRNAgff %>% select(id) %>% mutate(found = T)
   tmp2 <- ncRNAgffUnchanged %>% select(id)
@@ -47,7 +47,7 @@ alignAndCombine <- function(reference, gff1, gff2, time.it = T, quiet = F, filen
     mutate(start = -start, end = -end)
 
   ncRNAgff <- ncRNAgff %>% bind_rows(otherncRNA)
-
+  ncRNAgff <- ncRNAgff %>% mutate(set_val = 1)
   return(ncRNAgff)
 
 }
