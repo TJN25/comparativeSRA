@@ -18,13 +18,13 @@ if(reference.genome == F){
     if(quiet == F){
     printRemaining(i = i, length = nrow(gff), increment = 5)
     }
-    start_val <- gff[i, 3]
-    end_val <- gff[i, 4]
+    start_val <- gff$start[i]
+    end_val <- gff$end[i]
     for(j in 1:nrow(ref2)){
-      if(start_val >= ref2[j,4] && start_val <= ref2[j,5]){
-        gff[i,3] <- gff[i,3] + ref2[j, 7]
-        gff[i,4] <- gff[i,4] + ref2[j, 7]
-        gff[i, 12] <- T
+      if(start_val >= ref2$start.b[j] && start_val <= ref2$end.b[j]){
+        gff$start[i] <- gff$start[i] + ref2$diff[j]
+        gff$end[i] <- gff$end[i] + ref2$diff[j]
+        gff$changed[i] <- T
       }
     }
 
@@ -34,11 +34,11 @@ if(reference.genome == F){
     if(quiet == F){
       printRemaining(i = i, length = nrow(gff), increment = 5)
     }
-    start_val <- gff[i, 3]
-    end_val <- gff[i, 4]
+    start_val <- gff$start[i]
+    end_val <- gff$end[i]
     for(j in 1:nrow(ref2)){
-      if(start_val >= ref2[j,1] && start_val <= ref2[j,2]){
-        gff[i, 12] <- T
+      if(start_val >= ref2$start.a[j] && start_val <= ref2$end.a[j]){
+        gff$changed[i] <- T
       }
     }
 
