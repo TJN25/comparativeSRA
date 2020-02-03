@@ -19,8 +19,8 @@ alignAndCombine <- function(reference, gff1, gff2, time.it = T, quiet = F, filen
                                                    collapse.alignment = T,
                                                    quiet = quiet)
 
-  esch1 <- read.table(gff1, sep = "\t", header = T, as.is = T)
-  serr1 <- read.table(gff2, sep = "\t", header = T, as.is = T)
+  esch1 <- gff1
+  serr1 <- gff2
 
   esch1 <- esch1%>%mutate(changed = F)
   serr1 <- serr1%>%mutate(changed = F)

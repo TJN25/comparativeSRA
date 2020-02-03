@@ -55,7 +55,7 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
   # Data frame setup ----------------
 
 
-  ncRNAgff <- ncRNAgff%>%arrange(start) %>% arrange(strand)
+  ncRNAgff <- ncRNAgff%>%arrange(start)# %>% arrange(strand)
 
   ##Data will be written into this format
   mergedDat <- data.frame(sequence = as.character("0"), feature = as.character("0"),
@@ -315,7 +315,7 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
         new_feature <- F
 
     }else{
-    if(end_val > ncRNAgff$start[i + 1] & ncRNAgff$strand[i] == ncRNAgff$strand[i+1]){
+    if(end_val > ncRNAgff$start[i + 1]){ #& ncRNAgff$strand[i] == ncRNAgff$strand[i+1]){
       if(ncRNAgff$end[i + 1] > end_val){
         end_val <- ncRNAgff$end[i + 1]
       }
