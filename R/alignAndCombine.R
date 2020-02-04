@@ -45,7 +45,7 @@ alignAndCombine <- function(reference, gff1, gff2, time.it = T, quiet = F, filen
     mutate(start = -start, end = -end)
 
   ncRNAgff <- ncRNAgff %>% bind_rows(otherncRNA)
-  ncRNAgff <- ncRNAgff %>% mutate(set_val = 1)
+
   return(ncRNAgff)
 
 }

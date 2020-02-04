@@ -74,7 +74,9 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
                           stringsAsFactors = F)
 
   ##loop through the combined gff files and combine features that overlap
-  #i <- 278
+  i <- 8062
+
+
   current_feature <- F #is there a current feature being written?
   new_feature <- F
 
@@ -83,7 +85,6 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
 
 
   for(i in 1:(nrow(ncRNAgff))){
-
     if(quiet ==F){
     printRemaining(i <- i, length = nrow(ncRNAgff) - 1, increment = 5)
     }
@@ -152,14 +153,27 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
       number_of_features <- sum(as.numeric(idList))
 
       ##get the set values from old features
-      if(initial_data == F){
-        idSetValues <- ncRNAgff[start_i:i,c(17:(ncol(ncRNAgff)))]
-        for(j in 1:ncol(idSetValues)){
-          idSetValues[1,j] <- interset_all(idSetValues[idSetValues[,j]!= "0",j])
+        if(initial_data == F){
+          idSetValues <- ncRNAgff[start_i:i,c(17:(ncol(ncRNAgff)))]
+          fileIds <- ncRNAgff$file_id[start_i:i]
+          for(j in 1:ncol(idSetValues)){
+            if(substr(x = colnames(idSetValues)[j], start = nchar(colnames(idSetValues)[j]) - 4, stop =
+           nchar(colnames(idSetValues)[j])) == ".prop"){
+            idSetValues[idSetValues[,j] == "0", j] <- "0-0"
+            propSet <- data.frame(prop  = idSetValues[,j], file_id = fileIds, stringsAsFactors = F)
+            propSet <- propSet %>% separate(prop, into = c("a", "b"), sep = "-")
+            propSet[is.na(propSet)] <- "0"
+            propSet <- propSet %>% mutate(a = as.numeric(a),
+                                          b = as.numeric(b))
+            bUnique <- propSet %>% select(b, file_id) %>% unique()
+            idSetValues[1,j] <- paste(sum(propSet$a), sum(bUnique$b), sep = "-")
+          }else{
+             idSetValues[1,j] <- interset_all(idSetValues[idSetValues[,j]!= "0",j])
+          }
 
+          }
+          idSetValues <- idSetValues[1,]
         }
-        idSetValues <- idSetValues[1,]
-      }
 
       tmp <- data.frame(sequence = ncRNAgff$sequence[i],
                         feature = ncRNAgff$feature[i],
@@ -280,8 +294,21 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
         ##get the set values from old features
         if(initial_data == F){
           idSetValues <- ncRNAgff[start_i:i,c(17:(ncol(ncRNAgff)))]
+          fileIds <- ncRNAgff$file_id[start_i:i]
           for(j in 1:ncol(idSetValues)){
-            idSetValues[1,j] <- interset_all(idSetValues[idSetValues[,j]!= "0",j])
+            if(substr(x = colnames(idSetValues)[j], start = nchar(colnames(idSetValues)[j]) - 4, stop =
+           nchar(colnames(idSetValues)[j])) == ".prop"){
+            idSetValues[idSetValues[,j] == "0", j] <- "0-0"
+            propSet <- data.frame(prop  = idSetValues[,j], file_id = fileIds, stringsAsFactors = F)
+            propSet <- propSet %>% separate(prop, into = c("a", "b"), sep = "-")
+            propSet[is.na(propSet)] <- "0"
+            propSet <- propSet %>% mutate(a = as.numeric(a),
+                                          b = as.numeric(b))
+            bUnique <- propSet %>% select(b, file_id) %>% unique()
+            idSetValues[1,j] <- paste(sum(propSet$a), sum(bUnique$b), sep = "-")
+          }else{
+             idSetValues[1,j] <- interset_all(idSetValues[idSetValues[,j]!= "0",j])
+          }
 
           }
           idSetValues <- idSetValues[1,]
@@ -394,14 +421,27 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
       number_of_features <- sum(as.numeric(idList))
 
       ##get the set values from old features
-      if(initial_data == F){
-        idSetValues <- ncRNAgff[start_i:i,c(17:(ncol(ncRNAgff)))]
-        for(j in 1:ncol(idSetValues)){
-          idSetValues[1,j] <- interset_all(idSetValues[idSetValues[,j]!= "0",j])
+        if(initial_data == F){
+          idSetValues <- ncRNAgff[start_i:i,c(17:(ncol(ncRNAgff)))]
+          fileIds <- ncRNAgff$file_id[start_i:i]
+          for(j in 1:ncol(idSetValues)){
+            if(substr(x = colnames(idSetValues)[j], start = nchar(colnames(idSetValues)[j]) - 4, stop =
+           nchar(colnames(idSetValues)[j])) == ".prop"){
+            idSetValues[idSetValues[,j] == "0", j] <- "0-0"
+            propSet <- data.frame(prop  = idSetValues[,j], file_id = fileIds, stringsAsFactors = F)
+            propSet <- propSet %>% separate(prop, into = c("a", "b"), sep = "-")
+            propSet[is.na(propSet)] <- "0"
+            propSet <- propSet %>% mutate(a = as.numeric(a),
+                                          b = as.numeric(b))
+            bUnique <- propSet %>% select(b, file_id) %>% unique()
+            idSetValues[1,j] <- paste(sum(propSet$a), sum(bUnique$b), sep = "-")
+          }else{
+             idSetValues[1,j] <- interset_all(idSetValues[idSetValues[,j]!= "0",j])
+          }
 
+          }
+          idSetValues <- idSetValues[1,]
         }
-        idSetValues <- idSetValues[1,]
-      }
 
         tmp <- data.frame(sequence = ncRNAgff$sequence[i],
                         feature = ncRNAgff$feature[i],
@@ -431,6 +471,7 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
       new_feature <- F
     }
     }
+
   }
 
   # Tidy up and finish ------------------------------------------------------
