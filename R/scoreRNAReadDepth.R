@@ -52,14 +52,15 @@ scoreRNAReadDepth <- function(file_path, gff_names, sra, allData){
     gffDat$score_2[i] <- max(unlist(rnaData[gffDat$start[i]:gffDat$end[i],], use.names = F))/rnaTotal
   }
 
-  d1 <- gffDat %>%filter(new_feature == F, grepl(pattern = "sra_calls", x = file_names)) %>% mutate(group = "1") %>% select(group, score_2, id)
-  d2 <- gffDat%>% filter(new_feature == T) %>%  mutate(group = "2") %>% select(group, score_2, id)
-  d3 <- randomDat %>% mutate(group = "3")%>% select(group, score_2, id)
+  d1 <- gffDat %>%filter(new_feature == F, grepl(pattern = "sra_calls", x = file_names)) %>% mutate(group = "Known SRA predicted") %>% select(group, score_2, id)
+  d2 <- gffDat%>% filter(new_feature == T) %>%  mutate(group = "Novel SRA") %>% select(group, score_2, id)
+  d3 <- randomDat %>% mutate(group = "Random Data")%>% select(group, score_2, id)
+  d4 <- gffDat %>%filter(new_feature == F, grepl(pattern = "sra_calls", x = file_names) == F) %>% mutate(group = "Known SRA not predicted") %>% select(group, score_2, id)
 
   if(missing("allData")){
-    allData <- d1 %>% bind_rows(d2) %>% bind_rows(d3)
+    allData <- d1 %>% bind_rows(d2) %>% bind_rows(d3) %>% bind_rows(d4)
   }else{
-    allData <- allData %>% bind_rows(d1) %>% bind_rows(d2) %>% bind_rows(d3)
+    allData <- allData %>% bind_rows(d1) %>% bind_rows(d2) %>% bind_rows(d3) %>% bind_rows(d4)
   }
   return(allData)
 }
