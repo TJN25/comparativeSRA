@@ -3,7 +3,7 @@
 #' @param treeLengths list containing tree lengths
 #' @param treeDat data frame with node numbers and lengths
 #' @param name name of branch for extracting from list
-#' @keywords change colors on the bbone file
+#' @keywords gets tip.label lengths
 #' @export
 #' @examples
 #' getTreeLengths()
