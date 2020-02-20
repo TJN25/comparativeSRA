@@ -452,7 +452,7 @@ if(test_setup == T){
             propSet <- propSet %>% mutate(a = as.numeric(a),
                                           b = as.numeric(b))
             bUnique <- propSet %>% select(b, file_id) %>% unique()
-            if(length(propSet$a[propSet$a != 0])) >= 1){
+            if((length(propSet$a[propSet$a != 0])) >= 1){
             idSetValues[1,j] <- paste(ceiling(mean(propSet$a[propSet$a != 0])), sum(bUnique$b), sep = "-")
             }
             idSetValues[idSetValues[,j] == "0-0", j] <- paste("0-", file_counter, sep = "")
