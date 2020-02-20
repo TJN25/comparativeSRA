@@ -13,7 +13,19 @@
 
 mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1", filenum2 = "2", initial_data = T, align = T){
   # Setup and tests ---------------------------------------------------------
-
+  test_setup <- F
+  if(test_setup == T){
+    load("~/bin/r_git/R/mergeSRAData.Rda")
+    ncRNAgff <- mergeSRAData[["ncRNAgff"]]
+    filenum1 <- mergeSRAData[["filenum1"]]
+    filenum2 <- mergeSRAData[["filenum2"]]
+    initial_data <- mergeSRAData[["initial_data"]]
+    align <- mergeSRAData[["align"]]
+    quiet <- F
+    time.it <- T
+    i <- 0
+    test_setup <- T
+  }
   error_message <- "Either gff1 and gff2 or ncRNAgff are needed:\n"
   stop_val <- 0
   log_file = ""
@@ -74,13 +86,13 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
                           stringsAsFactors = F)
 
   ##loop through the combined gff files and combine features that overlap
-  i <- 8062
+  # i <- 8062
 
 
   current_feature <- F #is there a current feature being written?
   new_feature <- F
 
-
+#i <-511
   # Main loop ---------------------------------------------------------------
 
 
@@ -89,6 +101,11 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
     printRemaining(i <- i, length = nrow(ncRNAgff) - 1, increment = 5)
     }
 
+
+
+if(test_setup == T){
+  i <- i + 1
+}
     ##write the feature without checks if it could not be remapped
     ##This only applies if theree is a need to align
     if(ncRNAgff$start[i] < 0 && align == T){
@@ -427,14 +444,19 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
           for(j in 1:ncol(idSetValues)){
             if(substr(x = colnames(idSetValues)[j], start = nchar(colnames(idSetValues)[j]) - 4, stop =
            nchar(colnames(idSetValues)[j])) == ".prop"){
-            idSetValues[idSetValues[,j] == "0", j] <- "0-0"
+           file_counter <- unlist(strsplit(sort(ncRNAgff[, 16+ j], decreasing = T)[1], split = "-"))[2]
+           idSetValues[idSetValues[,j] == "0", j] <- "0-0"
             propSet <- data.frame(prop  = idSetValues[,j], file_id = fileIds, stringsAsFactors = F)
             propSet <- propSet %>% separate(prop, into = c("a", "b"), sep = "-")
             propSet[is.na(propSet)] <- "0"
             propSet <- propSet %>% mutate(a = as.numeric(a),
                                           b = as.numeric(b))
             bUnique <- propSet %>% select(b, file_id) %>% unique()
-            idSetValues[1,j] <- paste(sum(propSet$a), sum(bUnique$b), sep = "-")
+            if((length(propSet$a[propSet$a != 0])) >= 1){
+            idSetValues[1,j] <- paste(ceiling(mean(propSet$a[propSet$a != 0])), sum(bUnique$b), sep = "-")
+            }
+            idSetValues[idSetValues[,j] == "0-0", j] <- paste("0-", file_counter, sep = "")
+
           }else{
              idSetValues[1,j] <- interset_all(idSetValues[idSetValues[,j]!= "0",j])
           }
