@@ -12,6 +12,22 @@
 
 
 alignAndCombine <- function(reference, gff1, gff2, time.it = T, quiet = F, filenum1 = "1", filenum2 = "2", seqA = 1, seqB = 2){
+  test_setup <- F
+  if(test_setup == T){
+    load("~/bin/r_git/R/alignAndCombineData.Rda")
+    reference <- alignAndCombineData[["reference"]]
+    gff1 <- alignAndCombineData[["gff1"]]
+    gff2 <- alignAndCombineData[["gff2"]]
+    filenum2 <- alignAndCombineData[["filenum2"]]
+    filenum2 <- alignAndCombineData[["filenum2"]]
+    seqA <- alignAndCombineData[["seqA"]]
+    seqB <- alignAndCombineData[["seqB"]]
+    quiet <- F
+    time.it <- T
+    i <- 0
+    test_setup <- T
+  }
+
 
   referenceEsch1Serr1 <- read.table(reference, header = T, as.is = T)
   referenceEsch1Serr1Built <- buildReferenceLookup(reference = referenceEsch1Serr1,
