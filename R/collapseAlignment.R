@@ -6,16 +6,15 @@
 #' @examples
 #' collapseAlignment()
 
-collapseAlignment <- function(ref, quiet = F){
+collapseAlignment <- function(ref){
   ##being a new start point
   new.seq = T
   dat <- ref[0,]
+  i <- 0
 
+  i <- i + 1
   ##loop through the rows and combine the ones that can be
   for(i in 1:nrow(ref)){
-    if(quiet == F){
-      printRemaining(i, nrow(ref), increment = 5)
-    }
 
     ##if there is no current sequence start a new one
     if(new.seq == T){
