@@ -11,6 +11,25 @@
 #' buildReferenceLookup()
 
 buildReferenceLookup <- function(reference, seqA = 1, seqB = 2, remove.missing = T, collapse.alignment = T, quiet = F){
+
+test_setup <- F
+  if(test_setup == T){
+    load("~/bin/r_git/R/buildReferenceLookupData.Rda")
+    reference <- buildReferenceLookupData[["reference"]]
+    gff1 <- buildReferenceLookupData[["gff1"]]
+    gff2 <- buildReferenceLookupData[["gff2"]]
+    seqA <- buildReferenceLookupData[["seqA"]]
+    seqB <- buildReferenceLookupData[["seqB"]]
+    quiet <- F
+    time.it <- T
+    remove_missing <- T
+    i <- 0
+    collapse.alignment <- buildReferenceLookupData[["collapse.alignment"]]
+    test_setup <- T
+  }
+
+
+
   refA <- reference[,(seqA*2 - 1):(seqA*2)]
   refB <- reference[,(seqB*2 - 1):(seqB*2)]
   colnames(refA) <- c("start.a", "end.a")
@@ -38,7 +57,7 @@ buildReferenceLookup <- function(reference, seqA = 1, seqB = 2, remove.missing =
 
 
   if(collapse.alignment == T){
-    ref <- collapseAlignment(ref = ref, quiet = quiet)
+    ref <- collapseAlignment(ref = ref)
   }
 
   ref <- ref%>%mutate(diff = start.a - start.b)
