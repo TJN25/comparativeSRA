@@ -202,7 +202,7 @@ mergeSRAFast <- function(ncRNAgff, time.it = T, quiet = F, filenum1 = "1", filen
 
       ##check if the subsequent feature was contained within the first feature
       if(ncRNAgff$end[start_i] < end_val){
-        prop_val <- (ncRNAgff$end[start_i] - ncRNAgff$start[i])/(end_val - start_val)
+        prop_val <- (ncRNAgff$end[start_i] - ncRNAgff$start[start_i])/(ncRNAgff$end[i] - ncRNAgff$start[i])
       }else{
         prop_val <- 1
       }
@@ -307,7 +307,7 @@ mergeSRAFast <- function(ncRNAgff, time.it = T, quiet = F, filenum1 = "1", filen
 
         ##check if the subsequent feature was contained within the first feature
         if(ncRNAgff$end[start_i] < end_val){
-          prop_val <- (ncRNAgff$end[start_i] - ncRNAgff$start[i])/(end_val - start_val)
+          prop_val <- (ncRNAgff$end[start_i] - ncRNAgff$start[start_i])/(ncRNAgff$end[i] - ncRNAgff$start[i])
         }else{
           prop_val <- 1
         }
