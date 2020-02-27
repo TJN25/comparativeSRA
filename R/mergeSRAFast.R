@@ -16,7 +16,7 @@ mergeSRAFast <- function(ncRNAgff, time.it = T, quiet = F, filenum1 = "1", filen
   test_setup <- F
   if(test_setup == T){
     load(file = "~/bin/r_git/R/mergeSRAData.Rda")
-    ncRNAgff <- mergeSRAData[["ncRNAgff"]] %>% filter(start > 0)
+    ncRNAgff <- mergeSRAData[["ncRNAgff"]]
     filenum1 <- mergeSRAData[["filenum1"]]
     filenum2 <- mergeSRAData[["filenum2"]]
     initial_data <- mergeSRAData[["initial_data"]]
@@ -82,7 +82,7 @@ mergeSRAFast <- function(ncRNAgff, time.it = T, quiet = F, filenum1 = "1", filen
   current_feature <- F #is there a current feature being written?
   new_feature <- F
   counter <- 0
-  #i <-511
+  #i <-175
   # Main loop ---------------------------------------------------------------
 
 
@@ -190,13 +190,13 @@ mergeSRAFast <- function(ncRNAgff, time.it = T, quiet = F, filenum1 = "1", filen
       start_val <- ncRNAgff$start[i]
       start_i <- i
       end_val <- ncRNAgff$end[i]
-    }
+    }else{
 
     ##check if the existing values are outside the range of the initial values
     if(ncRNAgff$end[i] > end_val){
       end_val <- ncRNAgff$end[i]
     }
-
+    }
     ##check if the current end value overlaps with the next starting value and update the end value if it does
     if(i == nrow(ncRNAgff)){
 

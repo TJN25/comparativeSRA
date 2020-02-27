@@ -18,7 +18,7 @@ alignAndCombine <- function(reference, gff1, gff2, time.it = T, quiet = F, filen
     reference <- alignAndCombineData[["reference"]]
     gff1 <- alignAndCombineData[["gff1"]]
     gff2 <- alignAndCombineData[["gff2"]]
-    filenum2 <- alignAndCombineData[["filenum2"]]
+    filenum1 <- alignAndCombineData[["filenum1"]]
     filenum2 <- alignAndCombineData[["filenum2"]]
     seqA <- alignAndCombineData[["seqA"]]
     seqB <- alignAndCombineData[["seqB"]]
@@ -28,12 +28,13 @@ alignAndCombine <- function(reference, gff1, gff2, time.it = T, quiet = F, filen
     test_setup <- T
   }
 
-
   referenceEsch1Serr1 <- read.table(reference, header = T, as.is = T)
   referenceEsch1Serr1Built <- buildReferenceLookup(reference = referenceEsch1Serr1,
                                                    as.numeric(seqA), seqB = as.numeric(seqB),
                                                    collapse.alignment = T,
                                                    quiet = quiet)
+  gff1 <- gff1%>%mutate(row_numbers = as.character(row_numbers), score = as.character(score))
+  gff2 <- gff2%>%mutate(row_numbers = as.character(row_numbers), score = as.character(score))
 
   esch1 <- gff1
   serr1 <- gff2
@@ -45,11 +46,9 @@ alignAndCombine <- function(reference, gff1, gff2, time.it = T, quiet = F, filen
 
   serr1b <- reorderGFF(ref = referenceEsch1Serr1Built, gff = serr1, time.it = time.it, quiet = quiet)
   esch1b <- reorderGFF(ref = referenceEsch1Serr1Built, gff = esch1, reference.genome = T, time.it = time.it, quiet = quiet)
-
   serr1b <- serr1b%>%mutate(file_id = filenum2)
   esch1b <- esch1b%>%mutate(file_id = filenum1)
   ncRNAgff <- esch1b%>%bind_rows(serr1b)
-
   serr1 <- serr1%>%mutate(file_id = filenum2)
   esch1 <- esch1%>%mutate(file_id = filenum1)
   ncRNAgffUnchanged <- esch1%>%bind_rows(serr1)
@@ -59,9 +58,7 @@ alignAndCombine <- function(reference, gff1, gff2, time.it = T, quiet = F, filen
 
   otherncRNA <- ncRNAgffUnchanged %>% full_join(tmp1, by = "id") %>% filter(found == F) %>% select(-found) %>%
     mutate(start = -start, end = -end)
-
   ncRNAgff <- ncRNAgff %>% bind_rows(otherncRNA)
-
   return(ncRNAgff)
 
 }
