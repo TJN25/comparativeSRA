@@ -15,7 +15,7 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
   # Setup and tests ---------------------------------------------------------
   test_setup <- F
   if(test_setup == T){
-    load("~/bin/r_git/R/mergeSRAData.Rda")
+    load(file = "~/bin/r_git/R/mergeSRAData.Rda")
     ncRNAgff <- mergeSRAData[["ncRNAgff"]]
     filenum1 <- mergeSRAData[["filenum1"]]
     filenum2 <- mergeSRAData[["filenum2"]]
@@ -67,7 +67,16 @@ mergeSRA <- function(ncRNAgff, gff1, gff2, time.it = T, quiet = F, filenum1 = "1
   # Data frame setup ----------------
 
 
+
+  ncRNAgff <- ncRNAgff%>%mutate(change = ifelse(start < end, F, T))%>%
+    mutate(start.tmp = end)%>%
+    mutate(end.tmp = start)%>%
+    mutate(start = ifelse(change == T, start.tmp, start))%>%
+    mutate(end = ifelse(change == T, end.tmp, end))%>%
+    select(-start.tmp, -end.tmp, -change)
+
   ncRNAgff <- ncRNAgff%>%arrange(start)# %>% arrange(strand)
+
 
   ##Data will be written into this format
   mergedDat <- data.frame(sequence = as.character("0"), feature = as.character("0"),
