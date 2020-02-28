@@ -85,7 +85,7 @@ mergeSRAFast <- function(ncRNAgff, time.it = T, quiet = F, filenum1 = "1", filen
   #i <-175
   # Main loop ---------------------------------------------------------------
 
-
+i <- 1
   for(i in 1:(nrow(ncRNAgff))){
     if(quiet ==F){
       printRemaining(i <- i, length = nrow(ncRNAgff) - 1, increment = 5)
@@ -101,7 +101,7 @@ mergeSRAFast <- function(ncRNAgff, time.it = T, quiet = F, filenum1 = "1", filen
       end_val <- ncRNAgff$end[i]
 
       feature_matched <- F ##this is always false here as no other features have been compared
-      prop_val <- 1 ##prop val is always 1 if there is no feature matched
+      prop_val <- NA ##prop val is always 1 if there is no feature matched
 
       #select the current feature from the dataframe
       idRows <- ncRNAgff[i,]
