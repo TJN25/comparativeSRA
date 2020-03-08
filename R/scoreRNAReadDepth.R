@@ -22,7 +22,7 @@ scoreRNAReadDepth <- function(file_path, gff_names, sra, allData){
     rnaData <- read.table(paste(file_path, "/", rnaFiles[1], sep = ""), sep = "")
   }
 
-  randomDat <- read.table(paste(file_path, "/random_sequences/shifted/", sra, "_shifted_random_new_calls.txt", sep = ""), comment.char = "#", quote = "", sep = "\t", as.is = T, header = T)
+  randomDat <- read.table(paste(file_path, "/random_sequences/shuffled/", sra, "_shuffled_random_new_calls.txt", sep = ""), comment.char = "#", quote = "", sep = "\t", as.is = T, header = T)
 
 
   rnaData <- rnaData %>% mutate(maxVal = ifelse(V1 > V2, V1, V2)) %>% select(maxVal)
@@ -52,10 +52,13 @@ scoreRNAReadDepth <- function(file_path, gff_names, sra, allData){
     gffDat$score_2[i] <- max(unlist(rnaData[gffDat$start[i]:gffDat$end[i],], use.names = F))/rnaTotal
   }
 
-  d1 <- gffDat %>%filter(new_feature == F, grepl(pattern = "sra_calls", x = file_names)) %>% mutate(group = "Known SRA predicted") %>% select(group, score_2, id)
-  d2 <- gffDat%>% filter(new_feature == T) %>%  mutate(group = "Novel SRA") %>% select(group, score_2, id)
+  positiveControlsList <- c("rRNA", "tRNA", "riboswitch", "tmRNA", "SRP_RNA", "antisense")
+
+
+  d1 <- gffDat %>%filter(feature %in% positiveControlsList, grepl(pattern = "sra_calls", x = file_names)) %>% mutate(group = "Known SRA predicted") %>% select(group, score_2, id)
+  d2 <- gffDat%>% filter(!feature %in% positiveControlsList) %>%  mutate(group = "Novel SRA") %>% select(group, score_2, id)
   d3 <- randomDat %>% mutate(group = "Random Data")%>% select(group, score_2, id)
-  d4 <- gffDat %>%filter(new_feature == F, grepl(pattern = "sra_calls", x = file_names) == F) %>% mutate(group = "Known SRA not predicted") %>% select(group, score_2, id)
+  d4 <- gffDat %>%filter(feature %in% positiveControlsList, grepl(pattern = "sra_calls", x = file_names) == F) %>% mutate(group = "Known SRA not predicted") %>% select(group, score_2, id)
 
   if(missing("allData")){
     allData <- d1 %>% bind_rows(d2) %>% bind_rows(d3) %>% bind_rows(d4)
