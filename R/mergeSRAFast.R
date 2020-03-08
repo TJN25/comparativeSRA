@@ -21,7 +21,7 @@ mergeSRAFast <- function(ncRNAgff, time.it = T, quiet = F, filenum1 = "1", filen
     filenum2 <- mergeSRAData[["filenum2"]]
     initial_data <- mergeSRAData[["initial_data"]]
     align <- mergeSRAData[["align"]]
-    quiet <- T
+    quiet <- F
     time.it <- T
     i <- 0
     test_setup <- T
@@ -41,18 +41,52 @@ mergeSRAFast <- function(ncRNAgff, time.it = T, quiet = F, filenum1 = "1", filen
 
   ncRNAgff <- ncRNAgff%>%arrange(start)
 
-  counter = 10
-  for(i in 1:nrow(ncRNAgff)){
-    if(ncRNAgff$start[i] < 0 && align == T){
-      counter <- counter + 1
-    }else if(i == nrow(ncRNAgff)){
-      counter = counter + 1
-    }else{
-    if(ncRNAgff$end[i] < ncRNAgff$start[i + 1]){
 
+  current_feature <- F #is there a current feature being written?
+  new_feature <- F
+  counter <- 0
+  for(i in 1:(nrow(ncRNAgff))){
+    if(ncRNAgff$start[i] < 0 && align == T){
+      start_val <- ncRNAgff$start[i]
+      start_i <- i
+      end_val <- ncRNAgff$end[i]
       counter <- counter + 1
+      next
     }
+
+    if(current_feature == F){
+      start_val <- ncRNAgff$start[i]
+      start_i <- i
+      end_val <- ncRNAgff$end[i]
+    }else{
+      if(ncRNAgff$end[i] > end_val){
+        end_val <- ncRNAgff$end[i]
+      }
     }
+    if(i == nrow(ncRNAgff)){
+      counter <- counter + 1
+      current_feature <- F
+    }else{
+      aa <- min(c(ncRNAgff$start[i], ncRNAgff$start[start_i] ))
+      bb <- max(c(ncRNAgff$start[i], ncRNAgff$start[start_i] ))
+      cc <- min(c(ncRNAgff$end[i], ncRNAgff$end[start_i] ))
+      dd <- max(c(ncRNAgff$end[i], ncRNAgff$end[start_i] ))
+      prop_val <- (cc - bb)/(dd  - aa)
+      if(end_val > ncRNAgff$start[i + 1] && prop_val > 0.25){
+        if(ncRNAgff$end[i + 1] > end_val){
+          end_val <- ncRNAgff$end[i + 1]
+        }
+        current_feature <- T
+      }else{
+
+
+
+        counter <- counter + 1
+        current_feature <- F
+
+      }
+    }
+
   }
 
 
@@ -87,6 +121,12 @@ mergeSRAFast <- function(ncRNAgff, time.it = T, quiet = F, filenum1 = "1", filen
 
 i <- 1
   for(i in 1:(nrow(ncRNAgff))){
+    if(counter + 1 > nrow(mergedDat)){
+      print(counter)
+      print(i)
+      print(nrow(ncRNAgff))
+      print(nrow(mergedDat))
+    }
     if(quiet ==F){
       printRemaining(i <- i, length = nrow(ncRNAgff) - 1, increment = 5)
     }
@@ -154,6 +194,16 @@ i <- 1
         }
       }
       number_of_features <- sum(as.numeric(idList))
+      aa <- min(c(ncRNAgff$start[i], ncRNAgff$start[start_i] ))
+      bb <- max(c(ncRNAgff$start[i], ncRNAgff$start[start_i] ))
+      cc <- min(c(ncRNAgff$end[i], ncRNAgff$end[start_i] ))
+      dd <- max(c(ncRNAgff$end[i], ncRNAgff$end[start_i] ))
+
+      prop_val <- (cc - bb)/(dd  - aa)
+      #print(aa)
+      #print(bb)
+      #print(cc)
+      #print(dd)
 
       ##get the set values from old features
       counter <- counter + 1
@@ -201,11 +251,15 @@ i <- 1
     if(i == nrow(ncRNAgff)){
 
       ##check if the subsequent feature was contained within the first feature
-      if(ncRNAgff$end[start_i] < end_val){
-        prop_val <- (ncRNAgff$end[start_i] - ncRNAgff$start[start_i])/(ncRNAgff$end[i] - ncRNAgff$start[i])
-      }else{
-        prop_val <- 1
-      }
+
+      aa <- min(c(ncRNAgff$start[i], ncRNAgff$start[start_i] ))
+      bb <- max(c(ncRNAgff$start[i], ncRNAgff$start[start_i] ))
+      cc <- min(c(ncRNAgff$end[i], ncRNAgff$end[start_i] ))
+      dd <- max(c(ncRNAgff$end[i], ncRNAgff$end[start_i] ))
+
+      prop_val <- (cc - bb)/(dd  - aa)
+
+
 
       ##check if there was more than one feature overlapping
       feature_matched <- ifelse(length(unique(ncRNAgff$file_id[start_i:i])) > 1, T, F)
@@ -271,7 +325,19 @@ i <- 1
       number_of_features <- sum(as.numeric(idList))
 
 
+      aa <- min(c(ncRNAgff$start[i], ncRNAgff$start[start_i] ))
+      bb <- max(c(ncRNAgff$start[i], ncRNAgff$start[start_i] ))
+      cc <- min(c(ncRNAgff$end[i], ncRNAgff$end[start_i] ))
+      dd <- max(c(ncRNAgff$end[i], ncRNAgff$end[start_i] ))
 
+      prop_val <- (cc - bb)/(dd  - aa)
+      #print(aa)
+      #print(bb)
+      #print(cc)
+      #print(dd)
+      # if(prop_val != 1){
+      #   print(prop_val)
+      # }
       counter <- counter + 1
       mergedDat$sequence[counter] <- ncRNAgff$sequence[i]
       mergedDat$feature[counter] <- ncRNAgff$feature[i]
@@ -297,7 +363,17 @@ i <- 1
       new_feature <- F
 
     }else{
-      if(end_val > ncRNAgff$start[i + 1]){ #& ncRNAgff$strand[i] == ncRNAgff$strand[i+1]){
+      aa <- min(c(ncRNAgff$start[i], ncRNAgff$start[start_i] ))
+      bb <- max(c(ncRNAgff$start[i], ncRNAgff$start[start_i] ))
+      cc <- min(c(ncRNAgff$end[i], ncRNAgff$end[start_i] ))
+      dd <- max(c(ncRNAgff$end[i], ncRNAgff$end[start_i] ))
+
+      prop_val <- (cc - bb)/(dd  - aa)
+
+      if(end_val > ncRNAgff$start[i + 1] && prop_val > 0.25){
+        # if(prop_val != 1){
+        #   print(prop_val)
+        # }
         if(ncRNAgff$end[i + 1] > end_val){
           end_val <- ncRNAgff$end[i + 1]
         }
@@ -306,11 +382,7 @@ i <- 1
       }else{ ##if the next feature is not overlapping, start writing out the existing featur
 
         ##check if the subsequent feature was contained within the first feature
-        if(ncRNAgff$end[start_i] < end_val){
-          prop_val <- (ncRNAgff$end[start_i] - ncRNAgff$start[start_i])/(ncRNAgff$end[i] - ncRNAgff$start[i])
-        }else{
-          prop_val <- 1
-        }
+
 
         ##check if there was more than one feature overlapping
         feature_matched <- ifelse(length(unique(ncRNAgff$file_id[start_i:i])) > 1, T, F)
@@ -375,6 +447,16 @@ i <- 1
         }
         number_of_features <- sum(as.numeric(idList))
 
+        aa <- min(c(ncRNAgff$start[i], ncRNAgff$start[start_i] ))
+        bb <- max(c(ncRNAgff$start[i], ncRNAgff$start[start_i] ))
+        cc <- min(c(ncRNAgff$end[i], ncRNAgff$end[start_i] ))
+        dd <- max(c(ncRNAgff$end[i], ncRNAgff$end[start_i] ))
+
+        prop_val <- (cc - bb)/(dd  - aa)
+        #print(aa)
+        #print(bb)
+        #print(cc)
+        #print(dd)
 
         counter <- counter + 1
         mergedDat$sequence[counter] <- ncRNAgff$sequence[i]
