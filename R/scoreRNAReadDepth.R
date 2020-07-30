@@ -10,7 +10,7 @@
 #' scoreRNAReadDepth()
 
 
-scoreRNAReadDepth <- function(file_path, gff_names, sra, allData){
+scoreRNAReadDepth <- function(file_path, gff_names, sra, allData, mean_only = T){
   gffDat <- read.table(paste(file_path, "/", sra, "_new_calls.txt", sep = ""), comment.char = "#", quote = "", sep = "\t", as.is = T, header = T)
 
   if(dir.exists(paste(file_path, "/plot_files/", sep = ""))){
@@ -44,6 +44,7 @@ scoreRNAReadDepth <- function(file_path, gff_names, sra, allData){
 
   randomDat <- randomDat %>% mutate(score_2 = 0)
   i <- 1
+  if(mean_only == T){
   for(i in 1:nrow(randomDat)){
     randomDat$score_2[i] <- max(unlist(rnaData[randomDat$start[i]:randomDat$end[i],], use.names = F))/rnaTotal
   }
@@ -51,14 +52,24 @@ scoreRNAReadDepth <- function(file_path, gff_names, sra, allData){
   for(i in 1:nrow(gffDat)){
     gffDat$score_2[i] <- max(unlist(rnaData[gffDat$start[i]:gffDat$end[i],], use.names = F))/rnaTotal
   }
+  }else{
+    cat("saving all read values\n")
+    for(i in 1:nrow(randomDat)){
+      randomDat$score_2[i] <-paste(unlist(rnaData[randomDat$start[i]:randomDat$end[i],], use.names = F),  collapse = "")
 
+    }
+
+    for(i in 1:nrow(gffDat)){
+      gffDat$score_2[i] <- paste(unlist(rnaData[gffDat$start[i]:gffDat$end[i],], use.names = F),  collapse = "")
+    }
+  }
   positiveControlsList <- c("rRNA", "tRNA", "riboswitch", "tmRNA", "SRP_RNA", "antisense")
 
 
-  d1 <- gffDat %>%filter(feature %in% positiveControlsList, grepl(pattern = "sra_calls", x = file_names)) %>% mutate(group = "Known SRA predicted") %>% select(group, score_2, id)
+  d1 <- gffDat %>%filter(feature %in% positiveControlsList, grepl(pattern = "sra_calls", x = file_names)) %>% mutate(group = "Known SRA predicted") %>% select(group, score_2, id,start, end)
   d2 <- gffDat%>% filter(!feature %in% positiveControlsList) %>%  mutate(group = "Novel SRA") %>% select(group, score_2, id)
   d3 <- randomDat %>% mutate(group = "Random Data")%>% select(group, score_2, id)
-  d4 <- gffDat %>%filter(feature %in% positiveControlsList, grepl(pattern = "sra_calls", x = file_names) == F) %>% mutate(group = "Known SRA not predicted") %>% select(group, score_2, id)
+  d4 <- gffDat %>%filter(feature %in% positiveControlsList, grepl(pattern = "sra_calls", x = file_names) == F) %>% mutate(group = "Known SRA not predicted") %>% select(group, score_2, id, start, end)
 
   if(missing("allData")){
     allData <- d1 %>% bind_rows(d2) %>% bind_rows(d3) %>% bind_rows(d4)
